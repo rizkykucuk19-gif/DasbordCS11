@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark" data-menu-color="cyan">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexBoard — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+/* ===================== CSS VARIABLES ===================== */
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a26;
+  --fg: #f0f0f5;
+  --fg2: #a0a0b8;
+  --muted: #5a5a72;
+  --border: rgba(0,0,0,0.3);
+  --card: rgba(255,255,255,0.04);
+  --card-hover: rgba(255,255,255,0.07);
+  --shadow: rgba(0,0,0,0.5);
+  --glow: rgba(0,0,0,0.2);
+  --accent: #00e5c8;
+  --accent-rgb: 0,229,200;
+  --accent-dim: rgba(0,229,200,0.15);
+  --menu-accent: #00e5c8;
+  --menu-rgb: 0,229,200;
+  --sidebar-w: 260px;
+  --header-h: 70px;
+  --radius: 16px;
+  --border-style: 1px solid rgba(255,255,255,0.06);
+  --border-glow: 1px solid rgba(0,229,200,0.25);
+}
+
+/* Tema Terang */
+[data-theme="light"] {
+  --bg: #f4f4f8;
+  --bg2: #ffffff;
+  --bg3: #eaeaf0;
+  --fg: #1a1a2e;
+  --fg2: #5a5a72;
+  --muted: #8888a0;
+  --border: rgba(0,0,0,0.08);
+  --card: rgba(0,0,0,0.03);
+  --card-hover: rgba(0,0,0,0.06);
+  --shadow: rgba(0,0,0,0.08);
+  --glow: rgba(0,0,0,0.04);
+  --border-style: 1px solid rgba(0,0,0,0.08);
+  --border-glow: 1px solid rgba(0,229,200,0.35);
+}
+
+/* Tema Biru */
+[data-theme="blue"] {
+  --bg: #060d1f;
+  --bg2: #0c1630;
+  --bg3: #132040;
+  --fg: #e0eaff;
+  --fg2: #8099cc;
+  --muted: #4a6a9a;
+  --border: rgba(0,0,0,0.3);
+  --card: rgba(100,150,255,0.05);
+  --card-hover: rgba(100,150,255,0.1);
+  --shadow: rgba(0,0,80,0.4);
+  --glow: rgba(0,50,200,0.15);
+  --border-style: 1px solid rgba(100,160,255,0.1);
+  --border-glow: 1px solid rgba(100,180,255,0.3);
+}
+
+/* Warna Menu */
+[data-menu-color="cyan"] { --menu-accent: #00e5c8; --menu-rgb: 0,229,200; --accent: #00e5c8; --accent-rgb: 0,229,200; --accent-dim: rgba(0,229,200,0.15); }
+[data-menu-color="emerald"] { --menu-accent: #34d399; --menu-rgb: 52,211,153; --accent: #34d399; --accent-rgb: 52,211,153; --accent-dim: rgba(52,211,153,0.15); }
+[data-menu-color="amber"] { --menu-accent: #fbbf24; --menu-rgb: 251,191,36; --accent: #fbbf24; --accent-rgb: 251,191,36; --accent-dim: rgba(251,191,36,0.15); }
+[data-menu-color="rose"] { --menu-accent: #fb7185; --menu-rgb: 251,113,133; --accent: #fb7185; --accent-rgb: 251,113,133; --accent-dim: rgba(251,113,133,0.15); }
+[data-menu-color="violet"] { --menu-accent: #a78bfa; --menu-rgb: 167,139,250; --accent: #a78bfa; --accent-rgb: 167,139,250; --accent-dim: rgba(167,139,250,0.15); }
+
+/* ===================== RESET & BASE ===================== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background 0.6s ease, color 0.6s ease;
+}
+h1,h2,h3,h4,h5,h6 { font-family: 'Outfit', sans-serif; }
+a { text-decoration: none; color: inherit; }
+button { border: none; cursor: pointer; font-family: inherit; background: none; color: inherit; }
+
+/* ===================== PARTIKEL LATAR ===================== */
+#particles {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  z-index: 0; pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.6s;
+}
+[data-theme="light"] #particles { opacity: 0.15; }
+
+/* ===================== SIDEBAR ===================== */
+.sidebar {
+  position: fixed; top:0; left:0;
+  width: var(--sidebar-w); height: 100vh;
+  background: var(--bg2);
+  border-right: var(--border-style);
+  z-index: 100;
+  display: flex; flex-direction: column;
+  transition: transform 0.4s cubic-bezier(.4,0,.2,1), background 0.6s, border 0.6s;
+  overflow: hidden;
+}
+.sidebar::after {
+  content: '';
+  position: absolute; top:0; right:0;
+  width: 1px; height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--menu-accent), transparent);
+  opacity: 0.4;
+  transition: background 0.6s;
+}
+
+/* Logo */
+.logo-wrap {
+  display: flex; align-items: center; gap: 12px;
+  padding: 20px 22px;
+  border-bottom: var(--border-style);
+  position: relative;
+  overflow: hidden;
+}
+.logo-wrap::before {
+  content: '';
+  position: absolute; bottom:0; left:22px; right:22px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--menu-accent), transparent);
+  opacity: 0.3;
+}
+.logo-img {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  /* Proteksi: blur saat hover, pointer-events none */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 0 8px rgba(var(--menu-rgb),0.4));
+  transition: filter 0.4s;
+  position: relative;
+}
+.logo-wrap:hover .logo-img {
+  filter: blur(4px) drop-shadow(0 0 12px rgba(var(--menu-rgb),0.5));
+}
+.logo-watermark {
+  position: absolute; top:50%; left:50%;
+  transform: translate(-50%,-50%);
+  font-size: 10px; color: var(--muted);
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.logo-wrap:hover .logo-watermark { opacity: 1; }
+.logo-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px; font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--fg), var(--menu-accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Menu Navigasi */
+.nav-section {
+  flex: 1; overflow-y: auto; padding: 16px 12px;
+}
+.nav-label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--muted); padding: 8px 12px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: 12px;
+  font-size: 14px; font-weight: 500;
+  color: var(--fg2);
+  position: relative;
+  transition: all 0.3s ease;
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+.nav-item i { width: 20px; text-align: center; font-size: 15px; transition: color 0.3s, transform 0.3s; }
+.nav-item:hover {
+  background: var(--card-hover);
+  color: var(--fg);
+}
+.nav-item:hover i { transform: scale(1.15); }
+.nav-item.active {
+  background: var(--accent-dim);
+  color: var(--menu-accent);
+  font-weight: 600;
+}
+.nav-item.active i { color: var(--menu-accent); }
+.nav-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 60%; border-radius: 0 3px 3px 0;
+  background: var(--menu-accent);
+  box-shadow: 0 0 12px rgba(var(--menu-rgb),0.5);
+}
+.nav-badge {
+  margin-left: auto;
+  background: var(--menu-accent);
+  color: var(--bg);
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 14px 12px;
+  border-top: var(--border-style);
+  position: relative;
+}
+.sidebar-footer::before {
+  content: '';
+  position: absolute; top:0; left:12px; right:12px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--menu-accent), transparent);
+  opacity: 0.2;
+}
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 12px;
+  transition: background 0.3s;
+  cursor: pointer;
+}
+.sidebar-user:hover { background: var(--card-hover); }
+.user-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--menu-accent), rgba(var(--menu-rgb),0.5));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px; color: var(--bg);
+  flex-shrink: 0;
+}
+.user-info { overflow: hidden; }
+.user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: 11px; color: var(--muted); }
+
+/* ===================== OVERLAY MOBILE ===================== */
+.sidebar-overlay {
+  display: none; position: fixed; top:0; left:0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  opacity: 0; transition: opacity 0.3s;
+}
+.sidebar-overlay.show { display: block; opacity: 1; }
+
+/* ===================== HEADER ===================== */
+.main-wrap {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  position: relative; z-index: 1;
+  transition: margin 0.4s;
+}
+.header {
+  position: sticky; top: 0;
+  height: var(--header-h);
+  background: var(--bg2);
+  border-bottom: var(--border-style);
+  display: flex; align-items: center;
+  padding: 0 28px; gap: 16px;
+  z-index: 50;
+  transition: background 0.6s, border 0.6s;
+  backdrop-filter: blur(16px);
+}
+.header::after {
+  content: '';
+  position: absolute; bottom: 0; left: 28px; right: 28px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--menu-accent), transparent);
+  opacity: 0.2;
+}
+.burger {
+  display: none;
+  font-size: 20px; padding: 8px;
+  border-radius: 10px; transition: background 0.3s;
+}
+.burger:hover { background: var(--card-hover); }
+
+/* Dropdown di Header */
+.header-dropdowns {
+  display: flex; align-items: center; gap: 6px;
+  margin-left: auto;
+}
+.dropdown-wrap { position: relative; }
+.dropdown-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  color: var(--fg2);
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+.dropdown-btn:hover { background: var(--card-hover); color: var(--fg); }
+.dropdown-btn i.arrow { font-size: 10px; transition: transform 0.3s; }
+.dropdown-wrap.open .dropdown-btn i.arrow { transform: rotate(180deg); }
+
+.dropdown-menu {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 180px;
+  background: var(--bg3);
+  border: var(--border-glow);
+  border-radius: 14px;
+  padding: 6px;
+  opacity: 0; visibility: hidden;
+  transform: translateY(-8px) scale(0.96);
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 12px 40px var(--shadow), 0 0 20px rgba(var(--menu-rgb),0.08);
+  z-index: 200;
+}
+.dropdown-wrap.open .dropdown-menu {
+  opacity: 1; visibility: visible;
+  transform: translateY(0) scale(1);
+}
+.dropdown-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 10px;
+  font-size: 13px; font-weight: 500;
+  color: var(--fg2);
+  transition: all 0.2s;
+  cursor: pointer;
+  width: 100%;
+}
+.dropdown-option:hover { background: var(--card-hover); color: var(--fg); }
+.dropdown-option.active { color: var(--menu-accent); background: var(--accent-dim); }
+.dropdown-option .check { margin-left: auto; opacity: 0; font-size: 12px; }
+.dropdown-option.active .check { opacity: 1; }
+
+/* Warna kecil di dropdown warna menu */
+.color-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.dropdown-option:hover .color-dot { transform: scale(1.2); }
+.dropdown-option.active .color-dot { border-color: var(--fg); }
+
+/* Tema ikon */
+.theme-icon { width: 20px; text-align: center; }
+
+/* ===================== NOTIFIKASI ===================== */
+.notif-container {
+  position: fixed; top: 20px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  pointer-events: none;
+}
+.notif {
+  background: var(--bg3);
+  border: var(--border-glow);
+  border-radius: 14px;
+  padding: 14px 24px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; font-weight: 500;
+  color: var(--fg);
+  box-shadow: 0 8px 32px var(--shadow), 0 0 24px rgba(var(--menu-rgb),0.1);
+  pointer-events: auto;
+  animation: notifIn 0.5s cubic-bezier(.16,1,.3,1) forwards;
+  backdrop-filter: blur(20px);
+  white-space: nowrap;
+}
+.notif.out { animation: notifOut 0.4s cubic-bezier(.4,0,1,1) forwards; }
+.notif-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--accent-dim);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--menu-accent);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.notif-progress {
+  position: absolute; bottom: 0; left: 14px; right: 14px;
+  height: 2px; border-radius: 2px;
+  background: rgba(var(--menu-rgb),0.2);
+  overflow: hidden;
+}
+.notif-progress-bar {
+  height: 100%; border-radius: 2px;
+  background: var(--menu-accent);
+  animation: notifProgress 2.5s linear forwards;
+}
+
+@keyframes notifIn {
+  0% { opacity:0; transform: translateY(-30px) scale(0.9); filter: blur(8px); }
+  100% { opacity:1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes notifOut {
+  0% { opacity:1; transform: translateY(0) scale(1); filter: blur(0); }
+  100% { opacity:0; transform: translateY(-20px) scale(0.95); filter: blur(6px); }
+}
+@keyframes notifProgress {
+  0% { width: 100%; }
+  100% { width: 0%; }
+}
+
+/* ===================== KONTEN UTAMA ===================== */
+.content {
+  padding: 28px;
+}
+.welcome-section {
+  margin-bottom: 28px;
+  animation: fadeUp 0.6s cubic-bezier(.16,1,.3,1) both;
+}
+.welcome-title {
+  font-size: 28px; font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.welcome-title span { color: var(--menu-accent); }
+.welcome-sub { font-size: 14px; color: var(--fg2); }
+
+/* Kartu Statistik */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--card);
+  border: var(--border-style);
+  border-radius: var(--radius);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s ease;
+  cursor: pointer;
+  animation: fadeUp 0.6s cubic-bezier(.16,1,.3,1) both;
+}
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--menu-accent), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.stat-card:hover {
+  background: var(--card-hover);
+  border-color: var(--border-glow);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px var(--shadow), 0 0 20px rgba(var(--menu-rgb),0.06);
+}
+.stat-card:hover::before { opacity: 1; }
+
+.stat-card::after {
+  content: '';
+  position: absolute; top: -50%; right: -50%;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle, rgba(var(--menu-rgb),0.06), transparent 70%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.stat-card:hover::after { opacity: 1; }
+
+.stat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--accent-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: var(--menu-accent);
+  margin-bottom: 16px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.stat-card:hover .stat-icon {
+  transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(var(--menu-rgb),0.25);
+}
+.stat-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 30px; font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+.stat-label { font-size: 13px; color: var(--muted); font-weight: 500; }
+.stat-trend {
+  position: absolute; top: 22px; right: 22px;
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 20px;
+}
+.stat-trend.up { background: rgba(52,211,153,0.15); color: #34d399; }
+.stat-trend.down { background: rgba(251,113,133,0.15); color: #fb7185; }
+
+/* Grid Bawah */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  animation: fadeUp 0.6s cubic-bezier(.16,1,.3,1) 0.25s both;
+}
+.panel {
+  background: var(--card);
+  border: var(--border-style);
+  border-radius: var(--radius);
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s;
+}
+.panel:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.panel-title {
+  font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-title i { color: var(--menu-accent); font-size: 14px; }
+.panel-badge {
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--accent-dim); color: var(--menu-accent);
+}
+
+/* Grafik Bar Sederhana */
+.chart-bars {
+  display: flex; align-items: flex-end; gap: 10px;
+  height: 180px; padding-top: 10px;
+}
+.chart-bar-wrap {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 8px; height: 100%;
+  justify-content: flex-end;
+}
+.chart-bar {
+  width: 100%; border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(to top, var(--menu-accent), rgba(var(--menu-rgb),0.4));
+  transition: all 0.6s cubic-bezier(.16,1,.3,1);
+  position: relative;
+  min-height: 4px;
+  cursor: pointer;
+}
+.chart-bar:hover {
+  filter: brightness(1.2);
+  box-shadow: 0 4px 16px rgba(var(--menu-rgb),0.3);
+}
+.chart-bar::after {
+  content: attr(data-val);
+  position: absolute; top: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px; font-weight: 600; color: var(--fg2);
+  opacity: 0; transition: opacity 0.2s;
+}
+.chart-bar:hover::after { opacity: 1; }
+.chart-label { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+/* Aktivitas */
+.activity-list { display: flex; flex-direction: column; gap: 4px; }
+.activity-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 12px;
+  transition: background 0.25s;
+  cursor: pointer;
+}
+.activity-item:hover { background: var(--card-hover); }
+.activity-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px currentColor;
+}
+.activity-dot.green { background: #34d399; color: #34d399; }
+.activity-dot.amber { background: #fbbf24; color: #fbbf24; }
+.activity-dot.rose { background: #fb7185; color: #fb7185; }
+.activity-dot.cyan { background: var(--menu-accent); color: var(--menu-accent); }
+.activity-text { font-size: 13px; flex: 1; }
+.activity-text strong { font-weight: 600; color: var(--fg); }
+.activity-text span { color: var(--muted); }
+.activity-time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* Placeholder fitur */
+.placeholder-msg {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; text-align: center;
+  color: var(--muted);
+}
+.placeholder-msg i { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.placeholder-msg p { font-size: 14px; }
+.placeholder-msg .hint { font-size: 12px; margin-top: 6px; opacity: 0.6; }
+
+/* ===================== ANIMASI ===================== */
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ===================== RESPONSIF ===================== */
+@media (max-width: 1024px) {
+  .bottom-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.show { transform: translateX(0); }
+  .main-wrap { margin-left: 0; }
+  .burger { display: flex; align-items: center; justify-content: center; }
+  .content { padding: 20px 16px; }
+  .header { padding: 0 16px; }
+  .welcome-title { font-size: 22px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-value { font-size: 24px; }
+  .dropdown-btn span.hide-mobile { display: none; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .chart-bars { height: 140px; }
+}
+
+/* ===================== SCROLLBAR ===================== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg2); }
+</style>
+</head>
+<body>
+
+<!-- Partikel Latar -->
+<canvas id="particles"></canvas>
+
+<!-- Overlay Sidebar Mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo-wrap">
+    <!-- Proteksi logo: tidak bisa diklik kanan, drag, atau disimpan -->
+    <img src="https://i.ibb.co/KckbKXny/image.png" alt="NexBoard" class="logo-img"
+         oncontextmenu="return false" ondragstart="return false" onselectstart="return false"
+         style="-webkit-touch-callout:none;">
+    <span class="logo-watermark">PROTECTED</span>
+    <span class="logo-text">NexBoard</span>
+  </div>
+
+  <nav class="nav-section">
+    <div class="nav-label" data-i18n="menu_main">Menu Utama</div>
+    <div class="nav-item active" data-page="dashboard" onclick="setPage(this,'dashboard')">
+      <i class="fas fa-th-large"></i>
+      <span data-i18n="nav_dashboard">Dashboard</span>
+    </div>
+    <div class="nav-item" data-page="analytics" onclick="setPage(this,'analytics')">
+      <i class="fas fa-chart-line"></i>
+      <span data-i18n="nav_analytics">Analitik</span>
+    </div>
+    <div class="nav-item" data-page="users" onclick="setPage(this,'users')">
+      <i class="fas fa-users"></i>
+      <span data-i18n="nav_users">Pengguna</span>
+      <span class="nav-badge">128</span>
+    </div>
+    <div class="nav-item" data-page="products" onclick="setPage(this,'products')">
+      <i class="fas fa-box"></i>
+      <span data-i18n="nav_products">Produk</span>
+    </div>
+    <div class="nav-item" data-page="orders" onclick="setPage(this,'orders')">
+      <i class="fas fa-receipt"></i>
+      <span data-i18n="nav_orders">Pesanan</span>
+      <span class="nav-badge">5</span>
+    </div>
+    <div class="nav-item" data-page="messages" onclick="setPage(this,'messages')">
+      <i class="fas fa-envelope"></i>
+      <span data-i18n="nav_messages">Pesan</span>
+    </div>
+
+    <div class="nav-label" style="margin-top:12px;" data-i18n="menu_other">Lainnya</div>
+    <div class="nav-item" data-page="settings" onclick="setPage(this,'settings')">
+      <i class="fas fa-cog"></i>
+      <span data-i18n="nav_settings">Pengaturan</span>
+    </div>
+    <div class="nav-item" data-page="help" onclick="setPage(this,'help')">
+      <i class="fas fa-question-circle"></i>
+      <span data-i18n="nav_help">Bantuan</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name">Admin</div>
+        <div class="user-role" data-i18n="role_admin">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Konten Utama -->
+<div class="main-wrap">
+  <header class="header">
+    <button class="burger" id="burgerBtn" aria-label="Toggle menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Pencarian -->
+    <div style="position:relative; flex:1; max-width:320px;">
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;"></i>
+      <input type="text" data-i18n-placeholder="search_placeholder" placeholder="Cari sesuatu..."
+        style="width:100%;padding:9px 14px 9px 36px;border-radius:10px;border:var(--border-style);background:var(--card);color:var(--fg);font-size:13px;font-family:inherit;outline:none;transition:border 0.3s,box-shadow 0.3s;"
+        onfocus="this.style.borderColor='var(--border-glow)';this.style.boxShadow='0 0 12px rgba(var(--menu-rgb),0.1)'"
+        onblur="this.style.borderColor='var(--border-style)';this.style.boxShadow='none'">
+    </div>
+
+    <div class="header-dropdowns">
+      <!-- Dropdown Bahasa -->
+      <div class="dropdown-wrap" id="langDropdown">
+        <button class="dropdown-btn" onclick="toggleDropdown('langDropdown')">
+          <i class="fas fa-globe" style="color:var(--menu-accent);"></i>
+          <span class="hide-mobile" data-i18n="current_lang">Indonesia</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </button>
+        <div class="dropdown-menu">
+          <button class="dropdown-option active" data-lang="id" onclick="setLang('id')">
+            <span>🇮🇩</span> Indonesia <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-lang="en" onclick="setLang('en')">
+            <span>🇬🇧</span> English <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-lang="zh" onclick="setLang('zh')">
+            <span>🇨🇳</span> 中文 <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-lang="ja" onclick="setLang('ja')">
+            <span>🇯🇵</span> 日本語 <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-lang="ko" onclick="setLang('ko')">
+            <span>🇰🇷</span> 한국어 <i class="fas fa-check check"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dropdown Tema -->
+      <div class="dropdown-wrap" id="themeDropdown">
+        <button class="dropdown-btn" onclick="toggleDropdown('themeDropdown')">
+          <i class="fas fa-palette" style="color:var(--menu-accent);"></i>
+          <span class="hide-mobile" data-i18n="current_theme">Gelap</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </button>
+        <div class="dropdown-menu">
+          <button class="dropdown-option active" data-theme-val="dark" onclick="setTheme('dark')">
+            <span class="theme-icon"><i class="fas fa-moon"></i></span>
+            <span data-i18n="theme_dark">Gelap</span> <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-theme-val="light" onclick="setTheme('light')">
+            <span class="theme-icon"><i class="fas fa-sun"></i></span>
+            <span data-i18n="theme_light">Terang</span> <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-theme-val="blue" onclick="setTheme('blue')">
+            <span class="theme-icon"><i class="fas fa-water"></i></span>
+            <span data-i18n="theme_blue">Biru</span> <i class="fas fa-check check"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dropdown Warna Menu -->
+      <div class="dropdown-wrap" id="colorDropdown">
+        <button class="dropdown-btn" onclick="toggleDropdown('colorDropdown')">
+          <i class="fas fa-swatchbook" style="color:var(--menu-accent);"></i>
+          <span class="hide-mobile" data-i18n="menu_color_label">Warna</span>
+          <i class="fas fa-chevron-down arrow"></i>
+        </button>
+        <div class="dropdown-menu">
+          <button class="dropdown-option active" data-color="cyan" onclick="setMenuColor('cyan')">
+            <span class="color-dot" style="background:#00e5c8;"></span>
+            Cyan <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-color="emerald" onclick="setMenuColor('emerald')">
+            <span class="color-dot" style="background:#34d399;"></span>
+            Emerald <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-color="amber" onclick="setMenuColor('amber')">
+            <span class="color-dot" style="background:#fbbf24;"></span>
+            Amber <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-color="rose" onclick="setMenuColor('rose')">
+            <span class="color-dot" style="background:#fb7185;"></span>
+            Rose <i class="fas fa-check check"></i>
+          </button>
+          <button class="dropdown-option" data-color="violet" onclick="setMenuColor('violet')">
+            <span class="color-dot" style="background:#a78bfa;"></span>
+            Violet <i class="fas fa-check check"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Notifikasi -->
+      <button class="dropdown-btn" style="position:relative;" aria-label="Notifications">
+        <i class="fas fa-bell"></i>
+        <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--menu-accent);animation:pulse 2s infinite;"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Area Konten -->
+  <main class="content" id="mainContent">
+    <!-- Halaman Dashboard (default) -->
+    <div id="page-dashboard" class="page-content">
+      <div class="welcome-section">
+        <h1 class="welcome-title" data-i18n="welcome_title">Selamat Datang, <span>Admin</span></h1>
+        <p class="welcome-sub" data-i18n="welcome_sub">Berikut ringkasan aktivitas hari ini. Semua berjalan baik.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+          <div class="stat-value" data-count="84250">0</div>
+          <div class="stat-label" data-i18n="stat_revenue">Total Pendapatan</div>
+          <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 12.5%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+          <div class="stat-value" data-count="1284">0</div>
+          <div class="stat-label" data-i18n="stat_orders">Total Pesanan</div>
+          <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 8.2%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+          <div class="stat-value" data-count="367">0</div>
+          <div class="stat-label" data-i18n="stat_users">Pengguna Baru</div>
+          <div class="stat-trend down"><i class="fas fa-arrow-down"></i> 3.1%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-eye"></i></div>
+          <div class="stat-value" data-count="24580">0</div>
+          <div class="stat-label" data-i18n="stat_views">Total Tayangan</div>
+          <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 24.7%</div>
+        </div>
+      </div>
+
+      <div class="bottom-grid">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-chart-bar"></i> <span data-i18n="chart_title">Statistik Mingguan</span></h3>
+            <span class="panel-badge" data-i18n="chart_badge">Minggu Ini</span>
+          </div>
+          <div class="chart-bars" id="chartBars"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title"><i class="fas fa-bolt"></i> <span data-i18n="activity_title">Aktivitas Terbaru</span></h3>
+            <span class="panel-badge" data-i18n="activity_badge">Hari Ini</span>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placeholder halaman lain -->
+    <div id="page-analytics" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-chart-line"></i>
+        <p data-i18n="placeholder_analytics">Halaman Analitik — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+    <div id="page-users" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-users"></i>
+        <p data-i18n="placeholder_users">Halaman Pengguna — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+    <div id="page-products" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-box"></i>
+        <p data-i18n="placeholder_products">Halaman Produk — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+    <div id="page-orders" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-receipt"></i>
+        <p data-i18n="placeholder_orders">Halaman Pesanan — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+    <div id="page-messages" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-envelope"></i>
+        <p data-i18n="placeholder_messages">Halaman Pesan — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+    <div id="page-settings" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-cog"></i>
+        <p data-i18n="placeholder_settings">Halaman Pengaturan — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+    <div id="page-help" class="page-content" style="display:none;">
+      <div class="placeholder-msg">
+        <i class="fas fa-question-circle"></i>
+        <p data-i18n="placeholder_help">Halaman Bantuan — fitur akan ditambahkan</p>
+        <p class="hint" data-i18n="placeholder_hint">Klik menu lain untuk navigasi</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Kontainer Notifikasi -->
+<div class="notif-container" id="notifContainer"></div>
+
+<script>
+/* ===================== DATA TERJEMAHAN ===================== */
+const i18n = {
+  id: {
+    current_lang: 'Indonesia', current_theme: 'Gelap', menu_color_label: 'Warna',
+    theme_dark: 'Gelap', theme_light: 'Terang', theme_blue: 'Biru',
+    menu_main: 'Menu Utama', menu_other: 'Lainnya',
+    nav_dashboard: 'Dashboard', nav_analytics: 'Analitik', nav_users: 'Pengguna',
+    nav_products: 'Produk', nav_orders: 'Pesanan', nav_messages: 'Pesan',
+    nav_settings: 'Pengaturan', nav_help: 'Bantuan',
+    role_admin: 'Administrator',
+    search_placeholder: 'Cari sesuatu...',
+    welcome_title: 'Selamat Datang, <span>Admin</span>',
+    welcome_sub: 'Berikut ringkasan aktivitas hari ini. Semua berjalan baik.',
+    stat_revenue: 'Total Pendapatan', stat_orders: 'Total Pesanan',
+    stat_users: 'Pengguna Baru', stat_views: 'Total Tayangan',
+    chart_title: 'Statistik Mingguan', chart_badge: 'Minggu Ini',
+    activity_title: 'Aktivitas Terbaru', activity_badge: 'Hari Ini',
+    placeholder_analytics: 'Halaman Analitik — fitur akan ditambahkan',
+    placeholder_users: 'Halaman Pengguna — fitur akan ditambahkan',
+    placeholder_products: 'Halaman Produk — fitur akan ditambahkan',
+    placeholder_orders: 'Halaman Pesanan — fitur akan ditambahkan',
+    placeholder_messages: 'Halaman Pesan — fitur akan ditambahkan',
+    placeholder_settings: 'Halaman Pengaturan — fitur akan ditambahkan',
+    placeholder_help: 'Halaman Bantuan — fitur akan ditambahkan',
+    placeholder_hint: 'Klik menu lain untuk navigasi',
+    notif_lang: 'Bahasa diubah ke', notif_theme: 'Tema diubah ke', notif_color: 'Warna menu diubah ke',
+    days: ['Sen','Sel','Rab','Kam','Jum','Sab','Min'],
+    activities: [
+      { text: '<strong>Rina</strong> <span>membuat pesanan baru</span>', dot: 'green', time: '2m' },
+      { text: '<strong>Budi</strong> <span>mendaftar akun</span>', dot: 'cyan', time: '15m' },
+      { text: '<strong>Produk #482</strong> <span>stok hampir habis</span>', dot: 'amber', time: '32m' },
+      { text: '<strong>Pembayaran</strong> <span>gagal diproses</span>', dot: 'rose', time: '1j' },
+      { text: '<strong>Sari</strong> <span>menyelesaikan pesanan</span>', dot: 'green', time: '2j' },
+    ]
+  },
+  en: {
+    current_lang: 'English', current_theme: 'Dark', menu_color_label: 'Color',
+    theme_dark: 'Dark', theme_light: 'Light', theme_blue: 'Blue',
+    menu_main: 'Main Menu', menu_other: 'Others',
+    nav_dashboard: 'Dashboard', nav_analytics: 'Analytics', nav_users: 'Users',
+    nav_products: 'Products', nav_orders: 'Orders', nav_messages: 'Messages',
+    nav_settings: 'Settings', nav_help: 'Help',
+    role_admin: 'Administrator',
+    search_placeholder: 'Search something...',
+    welcome_title: 'Welcome, <span>Admin</span>',
+    welcome_sub: "Here's a summary of today's activity. Everything is running smoothly.",
+    stat_revenue: 'Total Revenue', stat_orders: 'Total Orders',
+    stat_users: 'New Users', stat_views: 'Total Views',
+    chart_title: 'Weekly Statistics', chart_badge: 'This Week',
+    activity_title: 'Recent Activity', activity_badge: 'Today',
+    placeholder_analytics: 'Analytics Page — feature to be added',
+    placeholder_users: 'Users Page — feature to be added',
+    placeholder_products: 'Products Page — feature to be added',
+    placeholder_orders: 'Orders Page — feature to be added',
+    placeholder_messages: 'Messages Page — feature to be added',
+    placeholder_settings: 'Settings Page — feature to be added',
+    placeholder_help: 'Help Page — feature to be added',
+    placeholder_hint: 'Click another menu to navigate',
+    notif_lang: 'Language changed to', notif_theme: 'Theme changed to', notif_color: 'Menu color changed to',
+    days: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    activities: [
+      { text: '<strong>Rina</strong> <span>created a new order</span>', dot: 'green', time: '2m' },
+      { text: '<strong>Budi</strong> <span>registered an account</span>', dot: 'cyan', time: '15m' },
+      { text: '<strong>Product #482</strong> <span>stock almost empty</span>', dot: 'amber', time: '32m' },
+      { text: '<strong>Payment</strong> <span>failed to process</span>', dot: 'rose', time: '1h' },
+      { text: '<strong>Sari</strong> <span>completed an order</span>', dot: 'green', time: '2h' },
+    ]
+  },
+  zh: {
+    current_lang: '中文', current_theme: '暗色', menu_color_label: '颜色',
+    theme_dark: '暗色', theme_light: '亮色', theme_blue: '蓝色',
+    menu_main: '主菜单', menu_other: '其他',
+    nav_dashboard: '仪表板', nav_analytics: '分析', nav_users: '用户',
+    nav_products: '产品', nav_orders: '订单', nav_messages: '消息',
+    nav_settings: '设置', nav_help: '帮助',
+    role_admin: '管理员',
+    search_placeholder: '搜索...',
+    welcome_title: '欢迎，<span>管理员</span>',
+    welcome_sub: '以下是今日活动摘要。一切运行顺利。',
+    stat_revenue: '总收入', stat_orders: '总订单',
+    stat_users: '新用户', stat_views: '总浏览量',
+    chart_title: '每周统计', chart_badge: '本周',
+    activity_title: '最新活动', activity_badge: '今天',
+    placeholder_analytics: '分析页面 — 功能待添加',
+    placeholder_users: '用户页面 — 功能待添加',
+    placeholder_products: '产品页面 — 功能待添加',
+    placeholder_orders: '订单页面 — 功能待添加',
+    placeholder_messages: '消息页面 — 功能待添加',
+    placeholder_settings: '设置页面 — 功能待添加',
+    placeholder_help: '帮助页面 — 功能待添加',
+    placeholder_hint: '点击其他菜单进行导航',
+    notif_lang: '语言已更改为', notif_theme: '主题已更改为', notif_color: '菜单颜色已更改为',
+    days: ['周一','周二','周三','周四','周五','周六','周日'],
+    activities: [
+      { text: '<strong>Rina</strong> <span>创建了新订单</span>', dot: 'green', time: '2分钟' },
+      { text: '<strong>Budi</strong> <span>注册了账户</span>', dot: 'cyan', time: '15分钟' },
+      { text: '<strong>产品 #482</strong> <span>库存不足</span>', dot: 'amber', time: '32分钟' },
+      { text: '<strong>付款</strong> <span>处理失败</span>', dot: 'rose', time: '1小时' },
+      { text: '<strong>Sari</strong> <span>完成了订单</span>', dot: 'green', time: '2小时' },
+    ]
+  },
+  ja: {
+    current_lang: '日本語', current_theme: 'ダーク', menu_color_label: 'カラー',
+    theme_dark: 'ダーク', theme_light: 'ライト', theme_blue: 'ブルー',
+    menu_main: 'メインメニュー', menu_other: 'その他',
+    nav_dashboard: 'ダッシュボード', nav_analytics: 'アナリティクス', nav_users: 'ユーザー',
+    nav_products: '製品', nav_orders: '注文', nav_messages: 'メッセージ',
+    nav_settings: '設定', nav_help: 'ヘルプ',
+    role_admin: '管理者',
+    search_placeholder: '検索...',
+    welcome_title: 'ようこそ、<span>管理者</span>',
+    welcome_sub: '本日のアクティビティ概要です。すべて順調に動作しています。',
+    stat_revenue: '総収益', stat_orders: '総注文数',
+    stat_users: '新規ユーザー', stat_views: '総閲覧数',
+    chart_title: '週間統計', chart_badge: '今週',
+    activity_title: '最近のアクティビティ', activity_badge: '今日',
+    placeholder_analytics: 'アナリティクスページ — 機能は後で追加',
+    placeholder_users: 'ユーザーページ — 機能は後で追加',
+    placeholder_products: '製品ページ — 機能は後で追加',
+    placeholder_orders: '注文ページ — 機能は後で追加',
+    placeholder_messages: 'メッセージページ — 機能は後で追加',
+    placeholder_settings: '設定ページ — 機能は後で追加',
+    placeholder_help: 'ヘルプページ — 機能は後で追加',
+    placeholder_hint: '他のメニューをクリックしてナビゲート',
+    notif_lang: '言語が変更されました：', notif_theme: 'テーマが変更されました：', notif_color: 'メニューカラーが変更されました：',
+    days: ['月','火','水','木','金','土','日'],
+    activities: [
+      { text: '<strong>Rina</strong> <span>が新規注文を作成</span>', dot: 'green', time: '2分' },
+      { text: '<strong>Budi</strong> <span>がアカウント登録</span>', dot: 'cyan', time: '15分' },
+      { text: '<strong>製品 #482</strong> <span>在庫が残りわずか</span>', dot: 'amber', time: '32分' },
+      { text: '<strong>支払い</strong> <span>処理に失敗</span>', dot: 'rose', time: '1時間' },
+      { text: '<strong>Sari</strong> <span>が注文を完了</span>', dot: 'green', time: '2時間' },
+    ]
+  },
+  ko: {
+    current_lang: '한국어', current_theme: '다크', menu_color_label: '색상',
+    theme_dark: '다크', theme_light: '라이트', theme_blue: '블루',
+    menu_main: '메인 메뉴', menu_other: '기타',
+    nav_dashboard: '대시보드', nav_analytics: '분석', nav_users: '사용자',
+    nav_products: '제품', nav_orders: '주문', nav_messages: '메시지',
+    nav_settings: '설정', nav_help: '도움말',
+    role_admin: '관리자',
+    search_placeholder: '검색...',
+    welcome_title: '환영합니다, <span>관리자</span>',
+    welcome_sub: '오늘의 활동 요약입니다. 모든 것이 순조롭게 진행되고 있습니다.',
+    stat_revenue: '총 수익', stat_orders: '총 주문',
+    stat_users: '신규 사용자', stat_views: '총 조회수',
+    chart_title: '주간 통계', chart_badge: '이번 주',
+    activity_title: '최근 활동', activity_badge: '오늘',
+    placeholder_analytics: '분석 페이지 — 기능은 나중에 추가',
+    placeholder_users: '사용자 페이지 — 기능은 나중에 추가',
+    placeholder_products: '제품 페이지 — 기능은 나중에 추가',
+    placeholder_orders: '주문 페이지 — 기능은 나중에 추가',
+    placeholder_messages: '메시지 페이지 — 기능은 나중에 추가',
+    placeholder_settings: '설정 페이지 — 기능은 나중에 추가',
+    placeholder_help: '도움말 페이지 — 기능은 나중에 추가',
+    placeholder_hint: '다른 메뉴를 클릭하여 이동',
+    notif_lang: '언어가 변경되었습니다:', notif_theme: '테마가 변경되었습니다:', notif_color: '메뉴 색상이 변경되었습니다:',
+    days: ['월','화','수','목','금','토','일'],
+    activities: [
+      { text: '<strong>Rina</strong> <span>가 새 주문을 생성</span>', dot: 'green', time: '2분' },
+      { text: '<strong>Budi</strong> <span>가 계정을 등록</span>', dot: 'cyan', time: '15분' },
+      { text: '<strong>제품 #482</strong> <span>재고 거의 소진</span>', dot: 'amber', time: '32분' },
+      { text: '<strong>결제</strong> <span>처리 실패</span>', dot: 'rose', time: '1시간' },
+      { text: '<strong>Sari</strong> <span>가 주문을 완료</span>', dot: 'green', time: '2시간' },
+    ]
+  }
+};
+
+/* ===================== STATE ===================== */
+let currentLang = 'id';
+let currentTheme = 'dark';
+let currentColor = 'cyan';
+
+/* ===================== FUNGSI NOTIFIKASI ===================== */
+function showNotif(message, icon = 'fa-check-circle') {
+  const container = document.getElementById('notifContainer');
+  const notif = document.createElement('div');
+  notif.className = 'notif';
+  notif.innerHTML = `
+    <div class="notif-icon"><i class="fas ${icon}"></i></div>
+    <span>${message}</span>
+    <div class="notif-progress"><div class="notif-progress-bar"></div></div>
+  `;
+  container.appendChild(notif);
+  // Hapus setelah animasi selesai
+  setTimeout(() => {
+    notif.classList.add('out');
+    setTimeout(() => notif.remove(), 400);
+  }, 2500);
+}
+
+/* ===================== FUNGSI BAHASA ===================== */
+function setLang(lang) {
+  currentLang = lang;
+  const t = i18n[lang];
+
+  // Perbarui semua elemen data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.innerHTML = t[key];
+  });
+  // Perbarui placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) el.placeholder = t[key];
+  });
+
+  // Tandai opsi aktif
+  document.querySelectorAll('#langDropdown .dropdown-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.lang === lang);
+  });
+
+  // Render ulang konten dinamis
+  renderChart();
+  renderActivity();
+
+  // Tutup dropdown
+  closeAllDropdowns();
+
+  // Notifikasi
+  showNotif(`${t.notif_lang} ${t.current_lang}`, 'fa-globe');
+}
+
+/* ===================== FUNGSI TEMA ===================== */
+function setTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  const t = i18n[currentLang];
+
+  // Tandai opsi aktif
+  document.querySelectorAll('#themeDropdown .dropdown-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.themeVal === theme);
+  });
+
+  // Perbarui label tema di tombol
+  const themeKey = 'theme_' + theme;
+  const btn = document.querySelector('#themeDropdown .dropdown-btn span.hide-mobile');
+  if (btn && t[themeKey]) btn.textContent = t[themeKey];
+
+  closeAllDropdowns();
+  showNotif(`${t.notif_theme} ${t[themeKey]}`, 'fa-palette');
+}
+
+/* ===================== FUNGSI WARNA MENU ===================== */
+function setMenuColor(color) {
+  currentColor = color;
+  document.documentElement.setAttribute('data-menu-color', color);
+
+  // Tandai opsi aktif
+  document.querySelectorAll('#colorDropdown .dropdown-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.color === color);
+  });
+
+  // Render ulang chart agar warna bar ikut berubah
+  renderChart();
+
+  closeAllDropdowns();
+  const t = i18n[currentLang];
+  const colorNames = { cyan: 'Cyan', emerald: 'Emerald', amber: 'Amber', rose: 'Rose', violet: 'Violet' };
+  showNotif(`${t.notif_color} ${colorNames[color]}`, 'fa-swatchbook');
+}
+
+/* ===================== DROPDOWN LOGIC ===================== */
+function toggleDropdown(id) {
+  const wrap = document.getElementById(id);
+  const isOpen = wrap.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) wrap.classList.add('open');
+}
+function closeAllDropdowns() {
+  document.querySelectorAll('.dropdown-wrap').forEach(w => w.classList.remove('open'));
+}
+// Klik di luar untuk menutup
+document.addEventListener('click', e => {
+  if (!e.target.closest('.dropdown-wrap')) closeAllDropdowns();
+});
+
+/* ===================== SIDEBAR MOBILE ===================== */
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+const burger = document.getElementById('burgerBtn');
+
+burger.addEventListener('click', () => {
+  sidebar.classList.toggle('show');
+  overlay.classList.toggle('show');
+});
+overlay.addEventListener('click', () => {
+  sidebar.classList.remove('show');
+  overlay.classList.remove('show');
+});
+
+/* ===================== NAVIGASI HALAMAN ===================== */
+function setPage(el, page) {
+  // Hapus aktif dari semua nav-item
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+
+  // Sembunyikan semua halaman
+  document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+  const target = document.getElementById('page-' + page);
+  if (target) {
+    target.style.display = 'block';
+    // Animasi masuk
+    target.style.animation = 'none';
+    target.offsetHeight; // reflow
+    target.style.animation = 'fadeUp 0.5s cubic-bezier(.16,1,.3,1) both';
+  }
+
+  // Jika dashboard, jalankan animasi angka
+  if (page === 'dashboard') animateCounters();
+
+  // Tutup sidebar mobile
+  sidebar.classList.remove('show');
+  overlay.classList.remove('show');
+}
+
+/* ===================== ANIMASI ANGKA ===================== */
+function animateCounters() {
+  document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const duration = 1200;
+    const start = performance.now();
+    el.textContent = '0';
+
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Easing: ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(eased * target);
+      el.textContent = current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+/* ===================== RENDER CHART ===================== */
+function renderChart() {
+  const t = i18n[currentLang];
+  const data = [65, 42, 78, 55, 90, 38, 72];
+  const maxVal = Math.max(...data);
+  const container = document.getElementById('chartBars');
+  container.innerHTML = '';
+
+  data.forEach((val, i) => {
+    const pct = (val / maxVal) * 100;
+    const wrap = document.createElement('div');
+    wrap.className = 'chart-bar-wrap';
+    wrap.innerHTML = `
+      <div class="chart-bar" style="height:0%;" data-val="${val}"></div>
+      <div class="chart-label">${t.days[i]}</div>
+    `;
+    container.appendChild(wrap);
+
+    // Animasi bar setelah render
+    setTimeout(() => {
+      wrap.querySelector('.chart-bar').style.height = pct + '%';
+    }, 100 + i * 80);
+  });
+}
+
+/* ===================== RENDER AKTIVITAS ===================== */
+function renderActivity() {
+  const t = i18n[currentLang];
+  const container = document.getElementById('activityList');
+  container.innerHTML = '';
+
+  t.activities.forEach((act, i) => {
+    const item = document.createElement('div');
+    item.className = 'activity-item';
+    item.style.animation = `fadeUp 0.4s cubic-bezier(.16,1,.3,1) ${i * 0.06}s both`;
+    item.innerHTML = `
+      <span class="activity-dot ${act.dot}"></span>
+      <div class="activity-text">${act.text}</div>
+      <div class="activity-time">${act.time}</div>
+    `;
+    container.appendChild(item);
+  });
+}
+
+/* ===================== PARTIKEL LATAR ===================== */
+function initParticles() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  const COUNT = 60;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Buat partikel
+  for (let i = 0; i < COUNT; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.5,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.5 + 0.2
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Ambil warna aksen dari CSS variable
+    const style = getComputedStyle(document.documentElement);
+    const rgb = style.getPropertyValue('--menu-rgb').trim() || '0,229,200';
+
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Wrap around
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.1, p.r), 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${rgb},${p.alpha})`;
+      ctx.fill();
+    });
+
+    // Garis penghubung antar partikel yang dekat
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(${rgb},${0.08 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ===================== PROTEKSI LOGO (JavaScript) ===================== */
+document.addEventListener('DOMContentLoaded', () => {
+  // Cegah drag gambar secara global
+  document.querySelectorAll('img').forEach(img => {
+    img.addEventListener('dragstart', e => e.preventDefault());
+    img.addEventListener('contextmenu', e => e.preventDefault());
+  });
+});
+
+/* ===================== INISIALISASI ===================== */
+window.addEventListener('DOMContentLoaded', () => {
+  initParticles();
+  renderChart();
+  renderActivity();
+  // Jalankan animasi angka sedikit tertunda agar terlihat
+  setTimeout(animateCounters, 300);
+});
+</script>
+</body>
+</html>
